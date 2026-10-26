@@ -1,0 +1,8 @@
+{
+  "name": "casetool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "가계도·생태도 사례도구",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

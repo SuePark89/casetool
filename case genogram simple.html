@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>사례도구</title>
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<style>
+:root{--g:#26745c;--l:#eef7f2;--b:#dce5df;--t:#25352d;--m:#69786f;--r:#b44747}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:var(--t);background:#f6f8f6;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{max-width:560px;margin:auto;padding:0 12px 48px}
+button,select,input,textarea{font:inherit;font-size:16px;border:1px solid var(--b);border-radius:8px;background:#fff;padding:10px;color:var(--t);max-width:100%}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #8acbb0;outline-offset:2px}
+.pri{background:var(--g);border-color:var(--g);color:#fff}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 0}
+h1{font-size:20px;margin:0}
+h2{font-size:15px;margin:20px 0 6px}
+.biz{max-width:560px;margin:0 auto;padding:12px 12px 40px;font-size:11px;color:var(--m);line-height:1.8;border-top:1px solid var(--b)}.biz a{color:inherit}
+.note{font-size:12px;color:var(--m);line-height:1.6;margin:4px 0 8px}
+.file{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer}
+.ic{flex:none;width:26px;height:34px;border:2px solid var(--g);border-radius:3px 10px 3px 3px;background:var(--l)}
+.fi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.fi span{font-size:12px;color:var(--m)}
+.x{padding:6px 10px;font-size:14px;color:var(--r)}
+.tabs{display:flex;gap:5px;position:sticky;top:0;background:#f6f8f6;padding:6px 0 10px;z-index:2}
+.tabs button{flex:1;padding:10px 2px;font-size:13px}
+.tabs .on{background:var(--g);border-color:var(--g);color:#fff}
+label{display:block;font-size:12px;font-weight:700;color:var(--m);margin:10px 0 4px}
+input,select,textarea{width:100%}
+input::placeholder,textarea::placeholder{color:#a9b5ad}
+.card{background:#fff;border:1px solid var(--b);border-radius:10px;padding:10px;margin-bottom:8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.tb{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px}
+.tb button{flex:none;white-space:nowrap;padding:8px 12px}
+.sc{background:#fff;border:1px solid var(--b);border-radius:10px;overflow:hidden}
+#cv{display:block;width:100%;touch-action:none;background-image:radial-gradient(#e4eae5 1px,transparent 1px);background-size:20px 20px}
+#panel{position:sticky;bottom:0;z-index:3;padding-top:6px;max-height:50vh;overflow-y:auto}#panel .card{box-shadow:0 -4px 14px rgba(0,0,0,.14);margin-bottom:0}
+.rr{display:grid;gap:6px}
+.lpg{display:flex;gap:6px;overflow-x:auto;position:relative;padding:2px 0 6px}
+.lp{flex:none;width:88px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;font-size:12px;line-height:1.2}
+.seg{display:flex;gap:6px;margin:4px 0}.seg button{flex:1;font-size:20px;padding:6px 0}
+.on3{border-color:#1686d9!important;background:#e8f4fd!important;box-shadow:0 0 0 2px #bfe0f7}
+.nd{cursor:grab}.nd text{pointer-events:none}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;margin:2px 14px 2px 0}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;margin:8px 14px 0 0;color:var(--t)}
+.chk input{width:auto}
+#st{color:var(--g);font-size:13px;min-height:18px}
+.on2{background:var(--g)!important;color:#fff;border-color:var(--g)!important}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}
+.mb{background:#fff;border-radius:12px;padding:16px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<footer id="biz" class="biz"></footer>
+<script>
+const GK={marriage:"결혼",cohabit:"동거",separation:"별거",divorce:"이혼",parent:"부모 → 자녀",adopt:"입양·위탁",close:"친밀",fused:"밀착",conflict:"갈등",fusedconf:"밀착+갈등",cutoff:"단절",distant:"소원(점선)",abuse:"학대 (가해 → 피해)",focus:"집중·일방적 관심 (→)"};
+const EK={strong:"강한 관계 (굵은 선)",normal:"보통 관계 (실선)",weak:"약한 관계 (긴 점선)",tenuous:"불확실·희미 (점선)",double:"매우 밀접 (이중선)",stress:"스트레스 (빗금선)",conflict:"갈등 (지그재그)",cutoff:"단절 (끊긴 선)"};
+const ECOT={center:"중심 가족",가족:"가족·친척",친구:"친구",직장:"직장",학교:"학교",기관:"기관",모임:"모임",온라인:"온라인",이웃:"이웃",의료:"의료",종교:"종교",기타:"기타"};
+const MODES={
+  geno:{title:"가계도",types:{male:"남성",female:"여성",unknown:"성별 미상",preg:"임신"},kinds:GK,def:"close",
+    hint:"도형을 추가한 뒤 눌러서 이름·기호를 바꾸세요. 인물은 드래그로 옮기고, '관계선'으로 어떤 두 사람이든 이어 갈등·학대·소원 등 관계를 표시합니다."},
+  eco:{title:"생태도",types:ECOT,kinds:EK,def:"normal",dir:1,
+    hint:"가운데는 가족, 둘레는 관련 체계입니다. 도형을 눌러 이름·유형을 바꾸고, 선을 눌러 종류·방향을 고르세요. 아직 연결되지 않았지만 도움이 될 수 있는 자원은 '잠재 자원'(점선 도형)으로 추가하세요. 도형을 두 손가락으로 벌리거나 오므려 크기를 바꿀 수 있습니다."}
+};
+const SXMAP={m:"male",f:"female",u:"unknown"};
+/* 오픈 전에 채우세요 (통신판매업 신고 후 사업자 정보·신고번호 표기가 필요합니다) */
+const BIZ={name:"",rep:"",regNo:"",mailNo:"",addr:"",tel:"",email:"",host:""};
+function bizFooter(){
+  const L=[["상호",BIZ.name],["대표",BIZ.rep],["사업자등록번호",BIZ.regNo],["통신판매업 신고번호",BIZ.mailNo],["주소",BIZ.addr],["전화",BIZ.tel],["이메일",BIZ.email],["호스팅",BIZ.host]].filter(x=>x[1]).map(x=>x[0]+" "+esc(x[1])).join(" | ");
+  $("biz").innerHTML=`<div><a href="/legal#terms">이용약관</a> · <a href="/legal#privacy"><b>개인정보처리방침</b></a> · <a href="/legal#refund">환불 안내</a></div><div>${L||"※ 사업자 정보 입력 필요 (BIZ 설정)"}</div>`;
+}
+const KEY="casetool-v3",WON=990,REPORT_WON=1900,REPORT_USES=3,PRICE=WON.toLocaleString("ko-KR")+"원 결제하고 워터마크 제거";
+/* 토스페이먼츠 클라이언트 키(test_ck_… / live_ck_…) — 개발자센터에서 발급. 시크릿 키는 여기에 넣지 말고 서버(server.js)에만 둡니다. */
+const TOSS_CLIENT_KEY="test_ck_여기에_클라이언트_키",ORDER_KEY="casetool-order";
+const ADJ=["따뜻한","푸른","고요한","환한","단단한","느린","맑은","깊은","작은","부드러운","든든한","새로운","잔잔한","용감한","향기로운","반짝이는","포근한","씩씩한","다정한","높은"];
+const NOUN=["햇살","바다","나무","구름","언덕","강물","별빛","바람","새벽","오솔길","등대","정원","다리","호수","이슬","민들레","노을","씨앗","숲","돌담"];
+const K="#44574c",RD="#b44747",FONT="system-ui,'Noto Sans KR','Malgun Gothic',sans-serif";
+let D=[],C=null,T="info",sel=null,tool=null,from=null,drag=null,pend=null;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+const cut=(s,n)=>s.length>n?s.slice(0,n-1)+"…":s;
+const opt=(o,cur)=>Object.entries(o).map(([k,v])=>`<option value="${esc(k)}"${k===cur?" selected":""}>${esc(v)}</option>`).join("");
+const say=t=>{const s=$("st");if(s)s.textContent=t};
+const G=()=>C[T];
+const node=id=>G().nodes.find(n=>n.id===id);
+const edge=id=>G().edges.find(e=>e.id===id);
+const nodeLabel=n=>n.client?(C.info.name||(n.type==="center"?C.alias:n.label)):n.label;
+const nodeAge=n=>n.client?C.info.age:n.age;
+const wrap=(s,n,l)=>{s=String(s);const a=[];for(let i=0;i<l&&i*n<s.length;i++)a.push(s.slice(i*n,(i+1)*n));if(s.length>n*l)a[l-1]=a[l-1].slice(0,n-1)+"…";return a};
+
+function load(){try{D=JSON.parse(localStorage.getItem(KEY)||"[]");D.forEach(c=>c.eco.nodes.forEach(n=>{if(n.type==="center")n.client=1}))}catch(e){D=[]}}
+function save(){if(C)C.upd=Date.now();try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+function newAlias(){
+  const used=new Set(D.map(c=>c.alias));
+  for(let i=0;i<300;i++){const a=ADJ[Math.random()*ADJ.length|0]+" "+NOUN[Math.random()*NOUN.length|0];if(!used.has(a))return a}
+  return ADJ[0]+" "+NOUN[0]+" "+(D.length+1);
+}
+
+function mk(){
+  const id=Date.now();
+  const n=(i,type,label,x,y,o)=>Object.assign({id:i,type,label,x,y,age:"",dead:0,ip:0},o||{});
+  const e=(i,a,b,kind,dir)=>({id:i,a,b,kind,dir:dir||"none"});
+  return {id,alias:newAlias(),upd:id,paid:0,paidRep:0,ai:{brief:"",report:""},nid:100,
+    info:{name:"",sex:"",age:"",addr:"",house:"",issue:"",econ:"",memo:""},
+    geno:{nodes:[n(1,"male","친조부",70,55),n(2,"female","친조모",150,55),n(3,"male","외조부",250,55),n(4,"female","외조모",330,55),
+      n(5,"male","아버지",110,185),n(6,"female","어머니",290,185),
+      n(7,"unknown","본인",150,325,{ip:1,client:1}),n(8,"unknown","형제·자매",250,325)],
+     edges:[e(11,1,2,"marriage"),e(12,3,4,"marriage"),e(13,5,6,"marriage"),e(14,1,5,"parent"),e(15,3,6,"parent"),e(16,5,7,"parent"),e(17,5,8,"parent"),e(18,7,8,"close")]},
+    eco:{nodes:[n(21,"center","",200,260,{client:1}),n(22,"학교","학교",200,70),n(23,"기관","기관",345,150),n(24,"친구","친구",345,370),n(25,"직장","직장",55,370),n(26,"모임","모임",55,150)],
+     edges:[e(31,21,22,"normal","both"),e(32,21,23,"strong","in"),e(33,21,24,"weak"),e(34,21,25,"stress","out"),e(35,21,26,"tenuous")]}
+  };
+}
+
+/* ---------- 선·도형 그리기 (화면·내보내기 공용) ---------- */
+function lineBody(k,x1,y1,x2,y2){
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,px=-uy,py=ux;
+  const f=v=>v.toFixed(1),P=(t,o)=>[x1+dx*t+px*(o||0),y1+dy*t+py*(o||0)];
+  const ln=(o,c,w,a,b,x)=>{const A=P(a??0,o),B=P(b??1,o);return `<line x1="${f(A[0])}" y1="${f(A[1])}" x2="${f(B[0])}" y2="${f(B[1])}" stroke="${c||K}" stroke-width="${w||2}" ${x||""}/>`};
+  const zz=()=>{const p=[];for(let i=0;i<=14;i++){const q=P(i/14,(i===0||i===14)?0:(i%2?6:-6));p.push(f(q[0])+","+f(q[1]))}return `<polyline points="${p.join(" ")}" fill="none" stroke="${RD}" stroke-width="1.2"/>`};
+  const tk=(t,h,c)=>{const A=P(t,h),B=P(t,-h);return `<line x1="${f(A[0]-ux*3)}" y1="${f(A[1]-uy*3)}" x2="${f(B[0]+ux*3)}" y2="${f(B[1]+uy*3)}" stroke="${c||K}" stroke-width="1.2"/>`};
+  const hd=(x,y,s)=>{const hx=x-ux*s*10,hy=y-uy*s*10;return `<polygon points="${f(x)},${f(y)} ${f(hx+px*5)},${f(hy+py*5)} ${f(hx-px*5)},${f(hy-py*5)}" fill="${K}"/>`};
+  let s;
+  switch(k){
+    case "strong":s=ln(0,K,5);break;
+    case "weak":s=ln(0,K,2,0,1,'stroke-dasharray="9 6"');break;
+    case "tenuous":case "distant":s=ln(0,K,2.5,0,1,'stroke-dasharray="1 6" stroke-linecap="round"');break;
+    case "cohabit":s=ln(0,K,2,0,1,'stroke-dasharray="6 4"');break;
+    case "stress":s=ln(0,RD);for(let d=14;d<L-10;d+=11)s+=tk(d/L,7,RD);break;
+    case "conflict":s=zz();break;
+    case "cutoff":s=ln(0,K,2,0,.4)+ln(0,K,2,.6,1)+tk(.45,8)+tk(.55,8);break;
+    case "double":case "close":s=ln(-3)+ln(3);break;
+    case "fused":s=ln(-5)+ln(0)+ln(5);break;
+    case "fusedconf":s=ln(-5)+ln(0)+ln(5)+zz();break;
+    case "separation":s=ln(0)+tk(.5,8);break;
+    case "divorce":s=ln(0)+tk(.44,8)+tk(.56,8);break;
+    case "abuse":s=zz();break;
+    case "focus":s=ln(0);break;
+    default:s=ln(0);
+  }
+  return s;
+}
+function lineSvg(k,x1,y1,x2,y2,dir){
+  dir=dir||"none";
+  if((k==="abuse"||k==="focus")&&dir==="none")dir="out";
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,px=-uy,py=ux,H=10,f=v=>v.toFixed(1);
+  const out=dir==="out"||dir==="both",inn=dir==="in"||dir==="both";
+  const hd=(x,y,s)=>{const hx=x-ux*s*H,hy=y-uy*s*H;return `<polygon points="${f(x)},${f(y)} ${f(hx+px*5)},${f(hy+py*5)} ${f(hx-px*5)},${f(hy-py*5)}" fill="${K}"/>`};
+  let s=lineBody(k,inn?x1+ux*H:x1,inn?y1+uy*H:y1,out?x2-ux*H:x2,out?y2-uy*H:y2);
+  if(out)s+=hd(x2,y2,1);
+  if(inn)s+=hd(x1,y1,-1);
+  return s;
+}
+const shape=(t,R,st)=>t==="male"?`<rect x="${-R}" y="${-R}" width="${2*R}" height="${2*R}" ${st}/>`
+  :t==="female"?`<circle r="${R}" ${st}/>`
+  :t==="preg"?`<polygon points="0,${-R-4} ${R+4},${R} ${-R-4},${R}" ${st}/>`
+  :t==="unknown"?`<polygon points="0,${-R-5} ${R+5},0 0,${R+5} ${-R-5},0" ${st}/>`
+  :t==="center"?`<ellipse rx="62" ry="38" ${st}/>`:`<circle r="36" ${st}/>`;
+const TX=`text-anchor="middle" fill="#25352d" font-family="${FONT}"`;
+
+function nodeSvg(n,mode,on){
+  const sc=mode==="geno"?K:"#26745c",st=`fill="${n.type==="center"?"#eef7f2":"#fff"}" stroke="${on?"#1686d9":sc}" stroke-width="${on?3:2}"`;
+  const sz=mode==="geno"?1:(n.s||1);
+  let s=`<g class="nd" data-id="${n.id}" transform="translate(${n.x} ${n.y})${sz!==1?` scale(${sz})`:""}">`;
+  if(mode==="geno"){
+    const R=20;
+    if(n.ip)s+=shape(n.type,R+5,'fill="none" stroke="#1686d9" stroke-width="1.5"');
+    s+=shape(n.type,R,st);
+    if(n.dead)s+=`<path d="M${-R} ${-R}L${R} ${R}M${R} ${-R}L${-R} ${R}" stroke="${K}" stroke-width="1.2"/>`;
+    s+=`<text y="${R+17}" font-size="11" ${TX}>${esc(cut(nodeLabel(n),6))}</text>`;
+    const a=nodeAge(n);if(a)s+=`<text y="${R+29}" font-size="10" ${TX} fill-opacity=".6">${esc(cut(String(a),8))}</text>`;
+  }else{
+    s+=shape(n.type,0,(n.pot?st+' stroke-dasharray="5 4"':st)+' vector-effect="non-scaling-stroke"');
+    const ls=wrap(nodeLabel(n),n.type==="center"?9:6,2);
+    s+=ls.map((t,i)=>`<text y="${((i-(ls.length-1)/2)*13+4).toFixed(1)}" font-size="11" ${TX}>${esc(t)}</text>`).join("");
+    if(n.pot)s+=`<text y="48" font-size="9" ${TX} fill-opacity=".6">잠재적 자원</text>`;else if(n.type!=="center"&&n.label!==n.type)s+=`<text y="48" font-size="9" ${TX} fill-opacity=".6">${esc(n.type)}</text>`;
+  }
+  return s+"</g>";
+}
+const nodeCut=(n,ux,uy,mode)=>mode==="geno"?28:(n.type==="center"?1/Math.sqrt((ux/62)**2+(uy/38)**2)+2:39)*(n.s||1);
+const pcFrag=k=>{const d=k==="adopt"?' stroke-dasharray="5 3"':"";return `<g fill="none" stroke="${K}" stroke-width="1.2"><line x1="16" y1="3" x2="48" y2="3"/><polyline points="32,3 32,13 8,13 8,23"${d}/><polyline points="32,13 56,13 56,23"${d}/></g>`};
+/* ---------- 가계도 관계선: 가족 구조선 / 관계선 구분, 곡선·자동 우회 ---------- */
+const GSTR=["marriage","cohabit","separation","divorce","parent","adopt"],isStr=k=>GSTR.includes(k);
+const GREL=Object.fromEntries(Object.entries(GK).filter(([k])=>!isStr(k))),GSTRK=Object.fromEntries(Object.entries(GK).filter(([k])=>isStr(k)));
+const f1=v=>v.toFixed(1);
+function bez(a,b,off,N){
+  const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,cx=(a.x+b.x)/2-dy/L*off*2,cy=(a.y+b.y)/2+dx/L*off*2,P=[];
+  for(let i=0;i<=N;i++){const t=i/N,u=1-t;P.push([u*u*a.x+2*u*t*cx+t*t*b.x,u*u*a.y+2*u*t*cy+t*t*b.y])}
+  return P;
+}
+function curveBody(k,P){
+  const n=P.length,cum=[0];for(let i=1;i<n;i++)cum.push(cum[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
+  const L=cum[n-1]||1;
+  const nr=i=>{const a=P[Math.max(0,i-1)],b=P[Math.min(n-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[-dy/l,dx/l]};
+  const pl=(o,c,w,x,t0,t1)=>{const q=[];for(let i=0;i<n;i++){const t=cum[i]/L;if(t<(t0||0)-1e-9||t>(t1===undefined?1:t1)+1e-9)continue;const m=nr(i);q.push(f1(P[i][0]+m[0]*o)+","+f1(P[i][1]+m[1]*o))}
+    return q.length<2?"":`<polyline points="${q.join(" ")}" fill="none" stroke="${c||K}" stroke-width="${w||2}" ${x||""}/>`};
+  const at=(t,o)=>{const d=t*L;let i=1;while(i<n-1&&cum[i]<d)i++;const r=(d-cum[i-1])/((cum[i]-cum[i-1])||1),m=nr(i);return[P[i-1][0]+(P[i][0]-P[i-1][0])*r+m[0]*o,P[i-1][1]+(P[i][1]-P[i-1][1])*r+m[1]*o]};
+  const zz=()=>{const N=Math.max(6,Math.round(L/11)),q=[];for(let i=0;i<=N;i++){const p=at(i/N,(i===0||i===N)?0:(i%2?6:-6));q.push(f1(p[0])+","+f1(p[1]))}return `<polyline points="${q.join(" ")}" fill="none" stroke="${RD}" stroke-width="1.2"/>`};
+  const tk=(t,h)=>{const A=at(t,h),B=at(t,-h);return `<line x1="${f1(A[0])}" y1="${f1(A[1])}" x2="${f1(B[0])}" y2="${f1(B[1])}" stroke="${K}" stroke-width="1.2"/>`};
+  switch(k){
+    case"strong":return pl(0,K,5);
+    case"weak":return pl(0,K,2,'stroke-dasharray="9 6"');
+    case"tenuous":case"distant":return pl(0,K,2.5,'stroke-dasharray="1 6" stroke-linecap="round"');
+    case"close":case"double":return pl(-3)+pl(3);
+    case"fused":return pl(-5)+pl(0)+pl(5);
+    case"fusedconf":return pl(-5)+pl(0)+pl(5)+zz();
+    case"conflict":case"abuse":return zz();
+    case"cutoff":return pl(0,K,2,"",0,.4)+pl(0,K,2,"",.6,1)+tk(.45,8)+tk(.55,8);
+    default:return pl(0);
+  }
+}
+function curveSvg(k,Q,dir){
+  dir=dir||"none";if((k==="abuse"||k==="focus")&&dir==="none")dir="out";
+  const H=10,out=dir==="out"||dir==="both",inn=dir==="in"||dir==="both",n=Q.length,cum=[0];
+  for(let i=1;i<n;i++)cum.push(cum[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1]));
+  const L=cum[n-1],P=Q.filter((p,i)=>(!inn||cum[i]>=H)&&(!out||L-cum[i]>=H));
+  const hd=(i0,i1)=>{const A=Q[i0],B=Q[i1],dx=B[0]-A[0],dy=B[1]-A[1],l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,px=-uy,py=ux,hx=B[0]-ux*H,hy=B[1]-uy*H;
+    return `<polygon points="${f1(B[0])},${f1(B[1])} ${f1(hx+px*5)},${f1(hy+py*5)} ${f1(hx-px*5)},${f1(hy-py*5)}" fill="${K}"/>`};
+  let s=P.length>=2?curveBody(k,P):"";
+  if(out)s+=hd(Math.max(0,n-4),n-1);
+  if(inn)s+=hd(Math.min(3,n-1),0);
+  return s;
+}
+/* 관계선이 다른 도형을 가로지르거나 가족선과 겹치면 자동으로 휘어서 피합니다. e.bow가 있으면 그 값을 우선합니다. */
+const OFFM=new WeakMap();
+function relOff(e,a,b,d){
+  if(e.bow!==undefined)return e.bow;
+  let M=OFFM.get(d);if(!M){M=new Map();OFFM.set(d,M)}
+  if(M.has(e.id))return M.get(e.id);
+  const same=x=>(x.a===e.a&&x.b===e.b)||(x.a===e.b&&x.b===e.a);
+  const str=d.edges.some(x=>x!==e&&isStr(x.kind)&&same(x)),others=d.nodes.filter(n=>n.id!==a.id&&n.id!==b.id);
+  const nm=new Map(d.nodes.map(n=>[n.id,n])),prev=[];
+  d.edges.slice(0,d.edges.indexOf(e)).forEach(x=>{if(isStr(x.kind))return;const p=nm.get(x.a),q=nm.get(x.b);if(p&&q)prev.push(bez(p,q,relOff(x,p,q,d),24).slice(4,21))});
+  const clear=o=>{const pts=bez(a,b,o,24);
+    return pts.every(p=>others.every(n=>Math.hypot(p[0]-n.x,p[1]-n.y)>34))&&prev.every(P=>pts.slice(4,21).every(p=>P.every(r=>Math.hypot(p[0]-r[0],p[1]-r[1])>12)))};
+  let r=str?40:0;
+  for(const o of str?[40,-40,70,-70,100,-100]:[0,34,-34,64,-64,94,-94])if(clear(o)){r=o;break}
+  M.set(e.id,r);return r;
+}
+function edgeGeom(e,a,b,mode,d){
+  if(mode==="geno"&&(e.kind==="parent"||e.kind==="adopt")){
+    const [u,w]=a.y<=b.y?[a,b]:[b,a],nm=new Map(d.nodes.map(n=>[n.id,n])),PC=["parent","adopt"],MAR=["marriage","cohabit","separation","divorce"];
+    const me=d.edges.find(x=>MAR.includes(x.kind)&&(x.a===u.id||x.b===u.id)),sp=me&&nm.get(me.a===u.id?me.b:me.a);
+    const ox=sp?(u.x+sp.x)/2:u.x,oy=sp?(u.y+sp.y)/2:u.y+26;
+    const kids=d.edges.filter(x=>PC.includes(x.kind)).map(x=>{const p=nm.get(x.a),q=nm.get(x.b);if(!p||!q)return null;return p.y<=q.y?{u:p,w:q}:{u:q,w:p}}).filter(t=>t&&(t.u.id===u.id||(sp&&t.u.id===sp.id)));
+    const top=Math.min(w.y,...kids.map(t=>t.w.y))-26,bar=oy+(top-oy)/2,pts=[[ox,oy],[ox,bar],[w.x,bar],[w.x,w.y-26]].map(r=>r.join(",")).join(" ");
+    return {pts,svg:`<polyline points="${pts}" fill="none" stroke="${K}" stroke-width="1.2"${e.kind==="adopt"?' stroke-dasharray="6 4"':""}/>`};
+  }
+  if(mode==="geno"&&!isStr(e.kind)){
+    const off=relOff(e,a,b,d);
+    if(off){
+      const L0=Math.hypot(b.x-a.x,b.y-a.y);if(L0<1)return null;
+      const ux=(b.x-a.x)/L0,uy=(b.y-a.y)/L0,ca=nodeCut(a,ux,uy,mode),cb=nodeCut(b,-ux,-uy,mode);
+      const Q=bez(a,b,off,60).filter(p=>Math.hypot(p[0]-a.x,p[1]-a.y)>=ca&&Math.hypot(p[0]-b.x,p[1]-b.y)>=cb);
+      if(Q.length<4)return null;
+      return {pts:Q.map(p=>f1(p[0])+","+f1(p[1])).join(" "),svg:curveSvg(e.kind,Q,e.dir||"none")};
+    }
+  }
+  const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);if(L<1)return null;
+  const ux=dx/L,uy=dy/L,ca=nodeCut(a,ux,uy,mode),cb=nodeCut(b,-ux,-uy,mode);
+  if(L<ca+cb+6)return null;
+  const x1=a.x+ux*ca,y1=a.y+uy*ca,x2=b.x-ux*cb,y2=b.y-uy*cb;
+  return {pts:`${x1},${y1} ${x2},${y2}`,svg:lineSvg(e.kind,x1,y1,x2,y2,e.dir||"none")};
+}
+function diagramSvg(d,mode,sl,ex){
+  OFFM.set(d,new Map());
+  const nm=new Map(d.nodes.map(n=>[n.id,n]));let s="";
+  d.edges.forEach(e=>{
+    const a=nm.get(e.a),b=nm.get(e.b);if(!a||!b)return;
+    const g=edgeGeom(e,a,b,mode,d);if(!g)return;
+    const on=sl&&sl.t==="e"&&sl.id===e.id;
+    s+=`<g class="ed" data-id="${e.id}">${on?`<polyline points="${g.pts}" fill="none" stroke="#1686d9" stroke-opacity=".35" stroke-width="10" stroke-linecap="round"/>`:""}${ex?"":`<polyline points="${g.pts}" fill="none" stroke="transparent" stroke-width="26" pointer-events="stroke"/>`}${g.svg}</g>`;
+  });
+  d.nodes.forEach(n=>{s+=nodeSvg(n,mode,sl&&sl.t==="n"&&sl.id===n.id)});
+  return s;
+}
+
+/* ---------- 범례 ---------- */
+function legendItems(mode){
+  const st='fill="#fff" stroke="#44574c" stroke-width="1.5"',it=[];
+  const sym=(t,l,extra)=>it.push({l,f:()=>`<g transform="translate(32 13)">${extra&&extra.ip?shape(t,13,'fill="none" stroke="#1686d9" stroke-width="1.5"'):""}${shape(t,8,st)}${extra&&extra.dead?'<path d="M-8-8L8 8M8-8L-8 8" stroke="#44574c" stroke-width="1.5"/>':""}</g>`});
+  const ln=(k,l,dir)=>it.push({l,f:()=>lineSvg(k,2,13,62,13,dir||"none")});
+  if(mode==="geno"){
+    sym("male","남성");sym("female","여성");sym("unknown","성별 미상");sym("preg","임신");
+    sym("male","사망 (X)",{dead:1});sym("female","대상자 (이중선)",{ip:1});
+    Object.entries(GK).forEach(([k,l])=>{
+      if(k==="parent"||k==="adopt")it.push({l,f:()=>pcFrag(k)});
+      else ln(k,l);
+    });
+  }else{
+    it.push({l:"중심 가족",f:()=>`<ellipse cx="32" cy="13" rx="24" ry="11" fill="#eef7f2" stroke="#26745c" stroke-width="1.5"/>`});
+    it.push({l:"관련 체계 (가족·친구·직장 등)",f:()=>`<circle cx="32" cy="13" r="11" fill="#fff" stroke="#26745c" stroke-width="1.5"/>`});
+    it.push({l:"잠재적 자원 (연결되지 않은 체계)",f:()=>`<circle cx="32" cy="13" r="11" fill="#fff" stroke="#26745c" stroke-width="1.5" stroke-dasharray="3 2.5"/>`});
+    Object.entries(EK).forEach(([k,l])=>ln(k,l));
+    ln("normal","자원·에너지 흐름 (한 방향)","out");ln("normal","상호 교류 (양방향)","both");
+  }
+  return it;
+}
+const kindFrag=(k,dir)=>(k==="parent"||k==="adopt")?pcFrag(k):lineSvg(k,2,13,62,13,dir||"none");
+const lineHtml=(kinds,cur,fn)=>`<div class="lpg">${Object.entries(kinds).map(([k,l])=>`<button class="lp${k===cur?" on3":""}" data-k="${k}" onclick="${fn}('${k}')"><svg width="64" height="26" viewBox="0 0 64 26">${kindFrag(k)}</svg><span>${esc(l.split(" (")[0])}</span></button>`).join("")}</div>`;
+function dirBtns(a,b,cur,fn){
+  const dx=b.x-a.x,dy=b.y-a.y,v=Math.abs(dx)<Math.abs(dy),flip=v?dy<0:dx<0,L=flip?"out":"in",R=flip?"in":"out";
+  return `<div class="seg">${[["none","─"],[L,v?"↑":"←"],[R,v?"↓":"→"],["both",v?"↕":"↔"]].map(([d,s])=>`<button class="${d===cur?"on3":""}" data-d="${d}" aria-label="선 방향 ${s}" onclick="${fn}('${d}')">${s}</button>`).join("")}</div>`;
+}
+const legendHtml=mode=>legendItems(mode).map(i=>`<span class="lg"><svg width="64" height="26" viewBox="0 0 64 26">${i.f()}</svg>${esc(i.l)}</span>`).join("");
+
+/* ---------- 내보내기 ---------- */
+function sheetSvg(mode,wm,resp){
+  const d=C[mode],ns=d.nodes,W=800,top=64,sc=2;
+  const y0=ns.length?Math.max(0,Math.min(...ns.map(n=>n.y))-70):0,y1=ns.length?Math.min(520,Math.max(...ns.map(n=>n.y))+80):520;
+  const h=(y1-y0)*sc,items=legendItems(mode),rh=34,rows=Math.ceil(items.length/2),H=top+h+48+rows*rh+24;
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" ${resp?`style="width:100%;display:block"`:`width="${W}" height="${H}"`} viewBox="0 0 ${W} ${H}" font-family="${FONT}"><rect width="${W}" height="${H}" fill="#fff"/>
+  <text x="24" y="38" font-size="22" font-weight="700" fill="#25352d">${esc(C.alias)} · ${MODES[mode].title}</text>
+  <g transform="translate(${(W-400*sc)/2} ${top}) scale(${sc}) translate(0 ${-y0})">${diagramSvg(d,mode,null,1)}</g>
+  <line x1="24" y1="${top+h+14}" x2="${W-24}" y2="${top+h+14}" stroke="#dce5df"/>
+  <text x="24" y="${top+h+38}" font-size="16" font-weight="700" fill="#25352d">범례</text>`;
+  items.forEach((i,k)=>{const x=24+(k%2)*(W/2),y=top+h+48+Math.floor(k/2)*rh;
+    s+=`<svg x="${x}" y="${y}" width="64" height="26" viewBox="0 0 64 26">${i.f()}</svg><text x="${x+76}" y="${y+18}" font-size="14" fill="#25352d">${esc(i.l)}</text>`});
+  if(wm){
+    for(let r=0;r<5;r++){const x=W/2+(r%2?70:-70),y=top+70+r*(h/4.4);
+      s+=`<text x="${x}" y="${y}" transform="rotate(-28 ${x} ${y})" font-size="38" font-weight="800" fill="#1d5c48" fill-opacity=".3" text-anchor="middle">사회복지 가계도와 생태도 미리보기</text>`}
+    for(let r=0;r<4;r++){const x=W/2+(r%2?-70:70),y=top+70+r*(h/4.4)+h/8.8;
+      s+=`<text x="${x}" y="${y}" transform="rotate(-28 ${x} ${y})" font-size="34" font-weight="800" fill="#1d5c48" fill-opacity=".2" text-anchor="middle">${wmWord(mode)}</text>`}
+    s+=`<text x="${W-24}" y="38" font-size="13" fill="#b44747" text-anchor="end">워터마크 포함 (결제 시 제거)</text>`;
+  }
+  return s+"</svg>";
+}
+function toCanvas(svg,scale){
+  return new Promise((ok,no)=>{
+    const img=new Image();
+    img.onload=()=>{const c=document.createElement("canvas");c.width=img.width*scale;c.height=img.height*scale;
+      const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);ok(c)};
+    img.onerror=no;
+    img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  });
+}
+function pdfFromJpeg(jpg,w,h){
+  const PW=595,PH=842,m=28,sc=Math.min((PW-2*m)/w,(PH-2*m)/h),iw=w*sc,ih=h*sc,x=(PW-iw)/2,y=PH-m-ih;
+  const enc=new TextEncoder(),parts=[],off=[];let len=0;
+  const add=b=>{parts.push(b);len+=b.length},str=s=>add(enc.encode(s));
+  const obj=(n,b)=>{off[n]=len;str(`${n} 0 obj\n${b}\nendobj\n`)};
+  str("%PDF-1.4\n");
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,"<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  off[4]=len;str(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);add(jpg);str("\nendstream\nendobj\n");
+  const cs=`q ${iw.toFixed(2)} 0 0 ${ih.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+  obj(5,`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
+  const xr=len;str("xref\n0 6\n0000000000 65535 f \n");
+  for(let i=1;i<=5;i++)str(String(off[i]).padStart(10,"0")+" 00000 n \n");
+  str(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+  return new Blob(parts,{type:"application/pdf"});
+}
+const dl=(b,n)=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
+async function doExport(mode,fmt,wm){
+  try{
+    const cv=await toCanvas(sheetSvg(mode,wm),2),name=`${C.alias}-${MODES[mode].title}`;
+    if(fmt==="png")cv.toBlob(b=>dl(b,name+".png"));
+    else{
+      const bin=atob(cv.toDataURL("image/jpeg",.92).split(",")[1]),a=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);
+      dl(pdfFromJpeg(a,cv.width,cv.height),name+".pdf");
+    }
+  }catch(e){notice("내보내기에 실패했습니다. 브라우저를 바꿔 다시 시도해 주세요.")}
+}
+function exp(m,f){if(C.paid)doExport(m,f,false);else showModal(m,f)}
+function showModal(m,f){
+  closeModal();
+  const d=document.createElement("div");d.className="modal";d.id="modal";
+  d.innerHTML=`<div class="mb" role="dialog" aria-modal="true"><b>내보내기 방식 선택</b>
+    <p class="note">무료 내보내기에는 워터마크가 들어갑니다. 결제하면(가입 불필요, 사례당 ${WON}원) 워터마크 없이 저장됩니다. 저장을 시작하면 환불이 제한됩니다.</p>
+    <button class="pri" onclick="modalGo('${m}','${f}',1)">${PRICE}</button>
+    <button onclick="modalGo('${m}','${f}',0)">워터마크 포함하여 저장</button>
+    <button onclick="closeModal()">취소</button></div>`;
+  document.body.appendChild(d);
+}
+const closeModal=()=>{const d=$("modal");if(d)d.remove()};
+async function modalGo(m,f,pay){closeModal();if(pay){await payFlow({m,f});return}else await doExport(m,f,true)}
+function ask(t,okLabel,fn,danger){
+  closeModal();const d=document.createElement("div");d.className="modal";d.id="modal";
+  d.innerHTML=`<div class="mb" role="alertdialog" aria-modal="true"><p style="margin:0;white-space:pre-wrap;line-height:1.6">${esc(t)}</p><button class="pri" id="askOk"${danger?' style="background:var(--r);border-color:var(--r)"':""}>${esc(okLabel)}</button><button onclick="closeModal()">취소</button></div>`;
+  document.body.appendChild(d);$("askOk").onclick=()=>{closeModal();fn()};
+}
+function notice(t,keep){
+  closeModal();const d=document.createElement("div");d.className="modal";d.id="modal";
+  d.innerHTML=`<div class="mb" role="alertdialog" aria-modal="true"><p style="margin:0;white-space:pre-wrap;line-height:1.6">${esc(t)}</p>${keep?"":'<button class="pri" onclick="closeModal()">확인</button>'}</div>`;
+  document.body.appendChild(d);
+}
+const PRODUCTS={unlock:{won:WON,name:"가계도·생태도 워터마크 제거",pre:"ct-"},report:{won:REPORT_WON,name:"사정 분석 300자 보고서",pre:"rp-"}};
+/* 결제 시작: 토스 결제창으로 이동(비회원 = ANONYMOUS). 금액은 서버에서도 다시 검증합니다. */
+async function payFlow(next,product){
+  product=product||"unlock";const P=PRODUCTS[product];
+  if(!/^https?:$/.test(location.protocol)){notice("결제는 웹 주소(http/https)로 접속했을 때만 가능합니다. 파일을 직접 열었다면 서버를 통해 열어 주세요.");return false}
+  if(!window.TossPayments){notice("결제 모듈을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.");return false}
+  const orderId=P.pre+(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2,10));
+  save();
+  try{
+    localStorage.setItem(ORDER_KEY,JSON.stringify({orderId,product,caseId:C.id,next:next||null}));
+    const back=location.origin+location.pathname;
+    await TossPayments(TOSS_CLIENT_KEY).payment({customerKey:TossPayments.ANONYMOUS}).requestPayment({
+      method:"CARD",amount:{currency:"KRW",value:P.won},orderId,orderName:P.name,
+      successUrl:back+"?pay=ok",failUrl:back+"?pay=fail"});
+  }catch(e){if(!e||e.code!=="USER_CANCEL")notice("결제를 시작하지 못했습니다."+(e&&e.message?"\n"+e.message:""))}
+  return false;
+}
+/* 결제창에서 돌아왔을 때: 서버가 토스에 승인 요청 → 성공하면 상품별로 처리 */
+async function payReturn(){
+  const q=new URLSearchParams(location.search),st=q.get("pay");if(!st)return;
+  if(st!=="ok"){
+    history.replaceState(null,"",location.pathname);
+    notice(q.get("code")==="PAY_PROCESS_CANCELED"?"결제를 취소했습니다.":"결제에 실패했습니다.\n"+(q.get("message")||""));return;
+  }
+  let o=null;try{o=JSON.parse(localStorage.getItem(ORDER_KEY)||"null")}catch(e){}
+  const orderId=q.get("orderId"),paymentKey=q.get("paymentKey"),amount=+q.get("amount"),prod=o&&o.product||"unlock",P=PRODUCTS[prod];
+  if(!o||!P||o.orderId!==orderId||amount!==P.won){history.replaceState(null,"",location.pathname);notice("결제 정보를 확인하지 못했습니다. 결제 내역이 있다면 영수증과 함께 문의해 주세요.");return}
+  notice("결제를 확인하는 중입니다…",1);
+  try{
+    const r=await fetch("/api/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({paymentKey,orderId,amount,product:prod})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||"승인 실패");
+    const c=D.find(x=>x.id===o.caseId);if(!c)throw new Error("사례를 찾지 못했습니다");
+    history.replaceState(null,"",location.pathname);
+    if(prod==="report"){
+      c.paidRep=1;c.repOrder=orderId;c.repLeft=null;C=c;T="ai";save();localStorage.removeItem(ORDER_KEY);render();closeModal();runAI("report");
+    }else{
+      c.paid=1;c.orderId=orderId;C=c;T="out";save();localStorage.removeItem(ORDER_KEY);render();
+      notice("결제가 완료되었습니다. 이제 워터마크 없이 저장할 수 있어요.");
+      if(o.next)await doExport(o.next.m,o.next.f,false);
+    }
+  }catch(e){notice("결제 승인에 실패했습니다.\n"+e.message+"\n\n새로고침하면 다시 시도합니다. 결제 금액이 청구되었는데 계속 실패하면 영수증과 함께 문의해 주세요.")}
+}
+
+/* ---------- 목록 ---------- */
+function newCase(){D.push(mk());C=D[D.length-1];T="info";save();render();scrollTo(0,0)}
+function openCase(id){C=D.find(c=>c.id===id);T="info";sel=tool=from=pend=null;render();scrollTo(0,0)}
+function closeCase(){save();C=null;render()}
+function delCase(id){const c=D.find(x=>x.id===id);if(!c)return;ask(`'${c.alias}' 사례를 삭제할까요?\n삭제하면 되돌릴 수 없습니다.`,"삭제",()=>{D=D.filter(x=>x.id!==id);save();render()},1)}
+function listView(){
+  const rows=D.slice().sort((a,b)=>b.upd-a.upd).map(c=>`
+    <div class="file" onclick="openCase(${c.id})"><div class="ic"></div>
+      <div class="fi"><b>${esc(c.alias)}</b><span>${new Date(c.upd).toLocaleDateString("ko-KR")} · 도형 ${c.geno.nodes.length+c.eco.nodes.length}개${c.paid?" · 결제 완료":""}</span></div>
+      <button class="x" onclick="event.stopPropagation();delCase(${c.id})">삭제</button></div>`).join("")||`<p class="note">아직 사례가 없습니다. 새 사례를 등록해 보세요.</p>`;
+  return `<div class="top"><h1>사례 목록</h1><button class="pri" onclick="newCase()">+ 사례 등록</button></div>${rows}
+    <p class="note">사례명은 개인정보 보호를 위해 '형용사+명사'로 자동 부여됩니다. 데이터는 이 브라우저에만 저장되며 기기 변경·브라우저 데이터 삭제 시 사라질 수 있습니다. 공용 기기에서는 사용 후 사례를 삭제하세요. 실제 사례정보는 기관의 개인정보 보호 지침을 확인한 뒤 입력하세요.</p>`;
+}
+
+/* ---------- 사례등록(기본정보) ---------- */
+function setI(k,v){C.info[k]=v;if(k==="sex"){const n=C.geno.nodes.find(x=>x.client);if(n&&SXMAP[v])n.type=SXMAP[v]}save()}
+function fld(k,lb,ph,area){
+  const v=esc(C.info[k]);
+  return `<label for="i_${k}">${lb}</label>`+(area
+    ?`<textarea id="i_${k}" rows="3" placeholder="${ph}" oninput="setI('${k}',this.value)">${v}</textarea>`
+    :`<input id="i_${k}" value="${v}" placeholder="${ph}" oninput="setI('${k}',this.value)">`);
+}
+const HOUSES=["1인 가구","부부 가구","부부+자녀 가구","한부모 가구","조손 가구","다문화 가구","청년 가구","노인 단독 가구","기타"];
+function setAlias(v){C.alias=v;const t=$("hd");if(t)t.textContent=v||"사례";save()}
+function infoView(){
+  const i=C.info;
+  return `<p class="note">모든 항목은 비워 둘 수 있습니다. 이름·성별·나이는 가계도 본인 기호와 생태도 중앙에 자동 반영되며, 이름을 비우면 사례명이 표시됩니다.</p>
+  <label for="i_alias">사례명 (직접 수정 가능)</label><input id="i_alias" value="${esc(C.alias)}" maxlength="20" oninput="setAlias(this.value)">
+  ${fld("name","이름·별칭","예) 김OO 또는 이니셜")}
+  <div class="g2"><div><label for="i_sex">성별</label><select id="i_sex" onchange="setI('sex',this.value)"><option value="">선택</option>${opt({m:"남성",f:"여성",u:"기타·미확인"},i.sex)}</select></div>
+  <div><label for="i_age">나이·생년월일</label><input id="i_age" value="${esc(i.age)}" placeholder="예) 42세" oninput="setI('age',this.value)"></div></div>
+  ${fld("addr","거주지","예) OO시 OO동")}
+  <label for="i_house">가구 유형</label><input id="i_house" list="hl" value="${esc(i.house)}" placeholder="목록에서 고르거나 직접 입력" oninput="setI('house',this.value)"><datalist id="hl">${HOUSES.map(x=>`<option value="${x}">`).join("")}</datalist>
+  ${fld("issue","주요 문제·욕구","예) 돌봄 공백, 생계 곤란",1)}
+  ${fld("econ","경제 상황","예) 기초생활수급, 일용직 소득")}
+  ${fld("memo","메모","예) 초기 상담 내용을 간단히 기록",1)}
+  <div class="row"><button class="pri" onclick="go('geno')">가계도 작성하기</button></div>`;
+}
+
+/* ---------- 도면 편집기 ---------- */
+function editorView(){
+  const g=T==="geno";
+  return `<p class="note">${g?"“인물추가”를 눌러 인물을 추가하세요.":"“체계추가”로 체계를, 아직 연결되지 않은 자원은 “잠재 자원”으로 추가하세요."} 도형은 드래그로 옮기고, 도형·선을 눌러 편집하세요.</p>
+  <div class="row" style="margin-top:0"><button id="btnConn" onclick="setTool(tool==='conn'?null:'conn')">${g?"관계선":"선"}</button><button id="btnAdd" onclick="beginAdd()">${g?"인물추가":"체계추가"}</button>${g?"":`<button id="btnPot" onclick="beginAdd(1)">잠재 자원</button>`}<div id="st" role="status"></div></div>
+  <div class="ed"><div class="sc"><svg id="cv" viewBox="0 0 400 520" role="img" aria-label="${MODES[T].title} 편집 영역"></svg></div><div id="panel"></div></div>
+  <h2>범례</h2><div>${legendHtml(T)}</div>
+  <div class="row"><button class="pri" onclick="go('${g?"eco":"out"}')">${g?"생태도 작성하기":"내보내기"}</button></div>${g?"":`<p class="note">개인정보 안내: 가명·호칭으로만 입력해 주세요. 데이터는 이 브라우저에만 저장되며, 사례를 삭제하면 함께 삭제되므로 개인정보가 보호됩니다.</p>`}`;
+}
+const wmWord=m=>m==="geno"?"Genogram":"Ecomap";
+function wmEditor(m){
+  let o="";
+  for(let r=0;r<6;r++)for(const x of(r%2?[200]:[100,300])){const y=50+r*95;
+    o+=`<text x="${x}" y="${y}" transform="rotate(-28 ${x} ${y})" font-size="40" font-weight="800" fill="#1d5c48" fill-opacity=".13" text-anchor="middle">${wmWord(m)}</text>`}
+  return `<g pointer-events="none" aria-hidden="true">${o}</g>`;
+}
+const pendLine=()=>{const a=node(pendE.a),b=node(pendE.b);return a&&b?`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1686d9" stroke-width="2.5" stroke-dasharray="5 4" pointer-events="none"/>`:""};
+const draw=()=>{const s=$("cv");if(s)s.innerHTML='<rect class="bg" x="0" y="0" width="400" height="520" fill="transparent"/>'+diagramSvg(G(),T,sel,0)+(pendE?pendLine():"")+wmEditor(T)+(pend?`<circle cx="${pend.x}" cy="${pend.y}" r="${T==="geno"?22:36}" fill="#1686d9" fill-opacity=".08" stroke="#1686d9" stroke-dasharray="4 3"/>`:"")};
+/* 새 도형이 기존 도형 위에 겹쳐 놓이지 않도록 빈 자리를 찾습니다 */
+function freeSpot(d,mode){
+  const R=mode==="geno"?26:38,c=[];
+  for(let y=40;y<=480;y+=20)for(let x=40;x<=360;x+=20)c.push([x,y]);
+  c.sort((p,q)=>Math.hypot(p[0]-200,p[1]-250)-Math.hypot(q[0]-200,q[1]-250));
+  const hit=(x,y,n)=>{const k=mode==="geno"?1:(n.s||1),rx=(n.type==="center"?62:(mode==="geno"?28:38))*k,ry=(n.type==="center"?38:(mode==="geno"?40:38))*k;return Math.abs(n.x-x)<rx+R+8&&Math.abs(n.y-y)<ry+R+8};
+  return c.find(([x,y])=>!d.nodes.some(n=>hit(x,y,n)))||[200,140];
+}
+function beginAdd(pot){
+  setTool(null);sel=null;pendE=null;
+  const g=T==="geno",sp=freeSpot(G(),T);
+  pend={x:sp[0],y:sp[1],type:g?"female":"기관",kind:MODES[T].def,dir:"none",pot:!g&&pot===1};
+  draw();panel();say(g?"인물 정보를 입력하고 추가를 누르세요.":(pend.pot?"잠재 자원의 이름을 입력하고 추가를 누르세요.":"체계 정보를 입력하고 추가를 누르세요."));
+}
+function setTool(t){
+  tool=t;from=null;
+  const b=$("btnConn");if(b)b.classList.toggle("on2",t==="conn");
+  say(t==="conn"?"연결할 첫 번째 도형을 누르세요.":"");
+}
+let pendE=null;
+function connectTap(id){
+  if(from==null){from=id;sel={t:"n",id};draw();panel();say("두 번째 도형을 누르세요.");return}
+  if(from===id)return;
+  if(T==="geno"){const a=from;setTool(null);pendE={a,b:id};sel=null;draw();panel();say("두 사람 사이의 관계를 고르세요.");return}
+  const d=G();
+  if(d.edges.some(e=>(e.a===from&&e.b===id)||(e.a===id&&e.b===from))){setTool(null);say("이미 선이 있습니다. 선을 눌러 종류를 바꾸세요.");return}
+  const e={id:C.nid++,a:from,b:id,kind:MODES[T].def,dir:"none"};
+  d.edges.push(e);[e.a,e.b].forEach(i=>{const q=node(i);if(q&&q.pot)q.pot=0});sel={t:"e",id:e.id};setTool(null);save();draw();panel();say("선을 연결했습니다. (연결된 잠재 자원은 현재 자원이 됩니다.)");
+}
+function startConnect(){if(sel&&sel.t==="n"){setTool("conn");from=sel.id;say("연결할 두 번째 도형을 누르세요.")}}
+function strip(p){const g=p.querySelector(".lpg"),o=g&&g.querySelector(".on3");if(o)g.scrollLeft=o.offsetLeft-g.clientWidth/2+o.clientWidth/2}
+function panel(){
+  const p=$("panel");if(!p)return;
+  const mo=MODES[T],isG=T==="geno";
+  if(pend){
+    const c=!isG&&G().nodes.find(n=>n.type==="center");
+    p.innerHTML=isG
+     ?`<div class="card"><b>인물 추가</b><div class="rr" style="grid-template-columns:1fr 84px;margin-top:6px"><input id="an" placeholder="이름·호칭" aria-label="이름"><input id="aa" placeholder="나이" aria-label="나이"></div>
+        <div class="row"><select id="as" style="width:auto" aria-label="성별">${opt(mo.types,pend.type)}</select><button class="pri" onclick="addPend()">추가</button><button onclick="cancelPend()">취소</button></div></div>`
+     :`<div class="card"><b>${pend.pot?"잠재적 자원 추가":"체계 추가"}</b><div class="rr" style="grid-template-columns:1.2fr 1fr;margin-top:6px"><input id="an" placeholder="${pend.pot?"이름 예) 지역아동센터":"이름 예) OO복지관"}" aria-label="이름"><select id="as" aria-label="유형">${opt(Object.fromEntries(Object.entries(mo.types).filter(([k])=>k!=="center")),pend.type)}</select></div>
+        <label class="chk"><input type="checkbox" ${pend.pot?"checked":""} onchange="potPend(this.checked)">잠재적 자원 (아직 연결되지 않은 점선 체계)</label>
+        ${pend.pot?`<p class="note">선 없이 점선 도형으로만 표시됩니다. 나중에 선을 연결하면 현재 자원이 됩니다.</p>`:""}
+        ${c&&!pend.pot?`<label>선 종류</label>${lineHtml(mo.kinds,pend.kind,"pickPend")}<label>선 방향</label>${dirBtns(c,pend,pend.dir,"dirPend")}`:""}
+        <div class="row"><button class="pri" onclick="addPend()">추가</button><button onclick="cancelPend()">취소</button></div></div>`;
+    strip(p);return;
+  }
+  if(pendE){
+    const a=node(pendE.a),b=node(pendE.b);if(!a||!b){pendE=null;return panel()}
+    p.innerHTML=`<div class="card"><b>${esc(cut(nodeLabel(a),6))} — ${esc(cut(nodeLabel(b),6))} 관계 선택</b>
+      <label>관계 (감정·상호작용)</label>${lineHtml(GREL,"","pickEdge")}
+      <label>가족 구조</label>${lineHtml(GSTRK,"","pickEdge")}
+      <div class="row"><button onclick="cancelEdge()">취소</button></div></div>`;strip(p);return;
+  }
+  if(!sel){p.innerHTML=isG?`<p class="note">“인물추가”로 인물을 만들고, “관계선”을 누른 뒤 관계가 있는 두 사람을 차례로 누르세요. 어떤 두 사람이든 연결할 수 있고, 이미 가족선이 있어도 갈등·학대·소원 같은 관계선을 더할 수 있습니다. 인물은 바로 드래그해 옮길 수 있습니다.</p>`:`<p class="note">“체계추가”로 도형을 만들고, “선”을 선택해 두 도형을 연결하세요. 아직 연결되지 않은 자원은 “잠재 자원”으로 추가하세요. 도형은 바로 드래그해 이동할 수 있습니다.</p>`;return}
+  if(sel.t==="n"){
+    const n=node(sel.id);if(!n){sel=null;return panel()}
+    p.innerHTML=`<div class="card"><div class="rr" style="grid-template-columns:${isG?"1fr 84px":"1.2fr 1fr"}">
+      <input id="pn" value="${esc(nodeLabel(n))}" placeholder="이름" aria-label="이름" oninput="nameSet(this.value)">
+      ${isG?`<input value="${esc(nodeAge(n))}" placeholder="나이" aria-label="나이" oninput="ageSet(this.value)">`:`<select aria-label="유형" onchange="typeSet(this.value)">${opt(mo.types,n.type)}</select>`}</div>
+      ${isG?`<div class="row"><select style="width:auto" aria-label="성별·기호" onchange="typeSet(this.value)">${opt(mo.types,n.type)}</select>
+        <label class="chk" style="margin:0"><input type="checkbox" ${n.dead?"checked":""} onchange="flagSet('dead',this.checked)">사망</label>
+        <label class="chk" style="margin:0"><input type="checkbox" ${n.ip?"checked":""} onchange="flagSet('ip',this.checked)">대상자</label></div>`:""}
+      ${!isG&&n.type!=="center"?`<label class="chk"><input type="checkbox" ${n.pot?"checked":""} onchange="potSet(this.checked)">잠재적 자원 (연결되지 않은 점선 체계)</label>`:""}
+      ${!isG?`<label>크기</label><div class="row" style="margin-top:0"><input type="range" min="60" max="240" value="${Math.round((n.s||1)*100)}" oninput="sizeSet(this.value)" aria-label="도형 크기" style="flex:1"><button onclick="sizeSet(100,1)">원래 크기</button></div>`:""}
+      ${nodeLine(n)}
+      <div class="row"><button onclick="startConnect()">${isG?"관계선 연결":"선"}</button><button class="x" onclick="delNode()">삭제</button><button onclick="closeSel()">닫기</button></div></div>`;
+    strip(p);
+  }else{
+    const e=edge(sel.id);if(!e){sel=null;return panel()}
+    const a=node(e.a),b=node(e.b);
+    p.innerHTML=`<div class="card"><div class="row" style="margin-top:0"><b style="flex:1">${esc(cut(nodeLabel(a),6))} — ${esc(cut(nodeLabel(b),6))}</b><button class="x" onclick="delEdge()">선 삭제</button><button onclick="closeSel()">닫기</button></div>
+      ${isG?`<label>관계 (감정·상호작용)</label>${lineHtml(GREL,e.kind,"kindSet")}<label>가족 구조</label>${lineHtml(GSTRK,e.kind,"kindSet")}`:`<label>선 종류</label>${lineHtml(mo.kinds,e.kind,"kindSet")}`}
+      ${noDir(e)?"":`<label>선 방향</label>${isG?dirNames(e,a,b):dirBtns(a,b,e.dir,"dirSet")}`}
+      ${isG&&!isStr(e.kind)?`<label>선 모양</label>${shapeBtns(e)}`:""}</div>`;
+    strip(p);
+  }
+}
+const cur=()=>sel&&sel.t==="n"?node(sel.id):null;
+function nameSet(v){const n=cur();if(!n)return;if(n.client)C.info.name=v;else n.label=v;save();draw()}
+function ageSet(v){const n=cur();if(!n)return;if(n.client)C.info.age=v;else n.age=v;save();draw()}
+function flagSet(k,v){const n=cur();if(!n)return;n[k]=v?1:0;save();draw()}
+function typeSet(v){
+  const n=cur();if(!n)return;
+  const old=n.type,def=t=>T==="geno"?MODES.geno.types[t]:(t==="center"?"가족":t);
+  if(n.label===def(old)||n.label===old)n.label=def(v);
+  n.type=v;
+  if(n.client&&T==="geno"){const s=Object.keys(SXMAP).find(k=>SXMAP[k]===v);if(s)C.info.sex=s}
+  save();draw();panel();
+}
+function delNode(){const d=G();d.nodes=d.nodes.filter(n=>n.id!==sel.id);d.edges=d.edges.filter(e=>e.a!==sel.id&&e.b!==sel.id);sel=null;save();draw();panel()}
+const curE=()=>sel&&sel.t==="e"?edge(sel.id):null;
+const markOn=(q,k,v)=>document.querySelectorAll(q).forEach(b=>b.classList.toggle("on3",b.dataset[k]===v));
+const noDir=e=>T==="geno"&&isStr(e.kind);
+function kindSet(v){
+  const e=curE();if(!e)return;
+  if(T==="geno"&&isStr(v)!==isStr(e.kind)){
+    const dup=G().edges.find(x=>x.id!==e.id&&((x.a===e.a&&x.b===e.b)||(x.a===e.b&&x.b===e.a))&&isStr(x.kind)===isStr(v));
+    if(dup){sel={t:"e",id:dup.id};draw();panel();say("같은 종류의 선이 이미 있어 그 선을 열었습니다.");return}
+  }
+  e.kind=v;
+  if(T==="geno"){if(isStr(v))e.dir="none";else if((v==="abuse"||v==="focus")&&(e.dir||"none")==="none")e.dir="out"}
+  save();draw();panel();say("");
+}
+function pickEdge(k){
+  if(!pendE)return;const d=G(),{a,b}=pendE;
+  const dup=d.edges.find(x=>((x.a===a&&x.b===b)||(x.a===b&&x.b===a))&&isStr(x.kind)===isStr(k));
+  pendE=null;
+  if(dup){sel={t:"e",id:dup.id};draw();panel();say("같은 종류의 선이 이미 있어 그 선을 열었습니다. 종류를 바꿔 보세요.");return}
+  const e={id:C.nid++,a,b,kind:k,dir:(k==="abuse"||k==="focus")?"out":"none"};
+  d.edges.push(e);sel={t:"e",id:e.id};save();draw();panel();
+  say(e.dir==="out"?`화살표는 ${cut(nodeLabel(node(a)),6)} → ${cut(nodeLabel(node(b)),6)} 방향입니다. 아래에서 바꿀 수 있어요.`:"선을 연결했습니다. 아래에서 종류를 바꿀 수 있어요.");
+}
+const cancelEdge=()=>{pendE=null;draw();panel();say("")};
+const dirNames=(e,a,b)=>`<div class="seg" id="dirSeg">${[["none","─ 없음"],["out",cut(nodeLabel(a),4)+" → "+cut(nodeLabel(b),4)],["in",cut(nodeLabel(b),4)+" → "+cut(nodeLabel(a),4)],["both","↔ 양방향"]].map(([d,t])=>`<button style="font-size:13px;padding:8px 2px" class="${d===(e.dir||"none")?"on3":""}" data-d="${d}" onclick="dirSet('${d}')">${esc(t)}</button>`).join("")}</div>`;
+const shapeBtns=e=>{const c=e.bow===undefined?"auto":String(e.bow);return `<div class="seg" id="shapeSeg">${[["auto","자동"],["0","직선"],["46","곡선 ↶"],["-46","곡선 ↷"]].map(([v,t])=>`<button style="font-size:13px;padding:8px 2px" class="${v===c?"on3":""}" data-b="${v}" onclick="bowSet('${v}')">${t}</button>`).join("")}</div>`};
+function bowSet(v){const e=curE();if(!e)return;if(v==="auto")delete e.bow;else e.bow=+v;save();draw();markOn("#shapeSeg button","b",v)}
+function dirSet(v){const e=curE();if(!e)return;e.dir=v;save();draw();markOn("#panel .seg:not(#shapeSeg) button","d",v)}
+function pickPend(k){pend.kind=k;markOn("#panel .lp","k",k)}
+function dirPend(d){pend.dir=d;markOn("#panel .seg button","d",d)}
+function potPend(v){const nm=($("an")||{}).value||"",ty=($("as")||{}).value;pend.pot=v;if(ty)pend.type=ty;panel();const a=$("an");if(a)a.value=nm}
+function cancelPend(){pend=null;draw();panel()}
+function addPend(){
+  const d=G(),g=T==="geno",type=$("as").value||pend.type,name=($("an").value||"").trim(),aa=$("aa");
+  const pot=!g&&!!pend.pot&&type!=="center";
+  const n={id:C.nid++,type,label:name||(g?MODES.geno.types[type]:(type==="center"?"가족":type)),x:pend.x,y:pend.y,age:g&&aa?aa.value.trim():"",dead:0,ip:0};
+  if(pot)n.pot=1;
+  d.nodes.push(n);
+  const c=!g&&!pot&&type!=="center"&&d.nodes.find(x=>x.type==="center");
+  if(c)d.edges.push({id:C.nid++,a:c.id,b:n.id,kind:pend.kind,dir:pend.dir});
+  pend=null;sel={t:"n",id:n.id};save();draw();panel();
+}
+function delEdge(){const d=G();d.edges=d.edges.filter(e=>e.id!==sel.id);sel=null;save();draw();panel()}
+
+function quickAdd(x,y){
+  const d=G(),g=T==="geno",type=g?"female":"친구",c=!g&&d.nodes.find(n=>n.type==="center");
+  const n={id:C.nid++,type,label:g?MODES.geno.types[type]:type,x,y,age:"",dead:0,ip:0};
+  d.nodes.push(n);
+  if(c)d.edges.push({id:C.nid++,a:c.id,b:n.id,kind:"normal",dir:"none"});
+  pend=null;sel={t:"n",id:n.id};save();draw();panel();say(g?"인물을 추가했습니다.":"체계를 추가했습니다.");
+}
+function closeSel(){sel=null;pend=pendE=null;draw();panel()}
+function nodeLine(n){
+  if(T!=="eco"||n.type==="center")return "";
+  const d=G(),c=d.nodes.find(x=>x.type==="center"),e=c&&d.edges.find(x=>(x.a===n.id&&x.b===c.id)||(x.b===n.id&&x.a===c.id));
+  return e?`<label>선 종류</label>${lineHtml(MODES.eco.kinds,e.kind,"nkSet")}<label>선 방향</label>${dirBtns(node(e.a),node(e.b),e.dir,"ndSet")}`:"";
+}
+function linkE(){
+  const n=cur();if(!n||T!=="eco")return null;
+  const d=G(),c=d.nodes.find(x=>x.type==="center");
+  return d.edges.find(x=>c&&((x.a===n.id&&x.b===c.id)||(x.b===n.id&&x.a===c.id)))||null;
+}
+function sizeSet(v,re){const n=cur();if(!n||T!=="eco")return;v=Math.max(60,Math.min(240,+v||100));if(v===100)delete n.s;else n.s=v/100;save();draw();if(re)panel()}
+function potSet(v){
+  const n=cur();if(!n||T!=="eco"||n.type==="center")return;
+  const d=G(),has=d.edges.some(e=>e.a===n.id||e.b===n.id);
+  const apply=()=>{
+    if(v){d.edges=d.edges.filter(e=>e.a!==n.id&&e.b!==n.id);n.pot=1}
+    else{n.pot=0;const c=d.nodes.find(x=>x.type==="center");if(c&&!d.edges.some(e=>(e.a===n.id&&e.b===c.id)||(e.b===n.id&&e.a===c.id)))d.edges.push({id:C.nid++,a:c.id,b:n.id,kind:"normal",dir:"none"})}
+    save();draw();panel();
+  };
+  if(v&&has){panel();ask("연결된 선이 삭제되고 점선 도형(잠재적 자원)으로 바뀝니다. 계속할까요?","바꾸기",apply);return}
+  apply();
+}
+function nkSet(v){const e=linkE();if(e){e.kind=v;save();draw();markOn("#panel .lp","k",v)}}
+function ndSet(v){const e=linkE();if(e){e.dir=v;save();draw();markOn("#panel .seg button","d",v)}}
+function bindCanvas(){
+  const svg=$("cv");
+  const pt=e=>{const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();return m?p.matrixTransform(m.inverse()):{x:200,y:260}};
+  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const ptrs=new Map();let pinch=null;
+  svg.onpointerdown=e=>{
+    ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===2&&T==="eco"){ /* 두 번째 손가락: 누르고 있던(또는 선택된) 도형의 크기 조절 시작 */
+      const id=drag?drag.id:(sel&&sel.t==="n"?sel.id:null),n=id!=null&&node(id);
+      if(n){const[a,b]=[...ptrs.values()];pinch={id,d0:Math.hypot(a.x-b.x,a.y-b.y)||1,s0:n.s||1};drag=null;e.preventDefault();return}
+    }
+    if(ptrs.size>1)return;
+    const ng=e.target.closest(".nd"),eg=e.target.closest(".ed");
+    if(tool==="conn"){if(ng){connectTap(+ng.dataset.id);return}setTool(null)}
+    if(ng){
+      const n=node(+ng.dataset.id),p=pt(e);
+      sel={t:"n",id:n.id};pend=pendE=null;drag={id:n.id,dx:n.x-p.x,dy:n.y-p.y};
+      try{svg.setPointerCapture(e.pointerId)}catch(_){}draw();panel();e.preventDefault();return;
+    }
+    if(eg){sel={t:"e",id:+eg.dataset.id};pend=pendE=null}
+    else{sel=null;pend=pendE=null;draw();panel();return}
+    draw();panel();
+  };
+  svg.onpointermove=e=>{
+    if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pinch){
+      if(ptrs.size>=2){const[a,b]=[...ptrs.values()],n=node(pinch.id);if(n){n.s=Math.round(cl(pinch.s0*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d0,.6,2.4)*100)/100;draw()}}
+      return;
+    }
+    if(!drag)return;
+    const n=node(drag.id),p=pt(e);if(!n)return;
+    n.x=Math.round(cl(p.x+drag.dx,36,364));n.y=Math.round(cl(p.y+drag.dy,36,484));draw();
+  };
+  svg.onpointerup=svg.onpointercancel=e=>{
+    ptrs.delete(e.pointerId);
+    if(pinch){if(ptrs.size<2){pinch=null;save();panel()}return}
+    if(drag){drag=null;save()}
+  };
+}
+
+/* ---------- 내보내기 탭 ---------- */
+function outView(){
+  return `<div class="card"><b>${C.paid?"결제 완료 · 워터마크 없이 저장됩니다":"미결제 · 워터마크가 포함됩니다"}</b>
+    ${C.paid?"":`<div class="row"><button class="pri" onclick="payFlow()">${PRICE}</button></div><p class="note">회원가입 없이 결제 · 이 사례의 가계도·생태도를 PNG·PDF로 워터마크 없이 저장할 수 있습니다. 결제 후 바로 이용하는 디지털 서비스라 저장을 시작하면 환불이 제한됩니다. (<a href="/legal#refund">환불 안내</a>)</p>`}
+    <p class="note">미리보기는 저장될 이미지와 같습니다. 범례가 함께 저장됩니다.</p></div>
+  ${["geno","eco"].map(m=>`<h2>${MODES[m].title}</h2><div class="sc">${sheetSvg(m,!C.paid,1)}</div>
+    <div class="row"><button onclick="exp('${m}','png')">PNG 저장</button><button onclick="exp('${m}','pdf')">PDF 저장</button></div>`).join("")}`;
+}
+
+/* ---------- 사정 분석 (한국 사회복지 실천·교육용) ---------- */
+const dn=(x,m)=>{const d=((x.kind==="abuse"||x.kind==="focus")&&(x.dir||"none")==="none")?"out":(x.dir||"none");return d==="out"?m[x.a]+"→"+m[x.b]:d==="in"?m[x.b]+"→"+m[x.a]:d==="both"?"양방향":""};
+function casePayload(){
+  const i=C.info,lb=n=>n.client?"대상자":n.label,m=d=>Object.fromEntries(d.nodes.map(n=>[n.id,lb(n)]));
+  const g=C.geno,e=C.eco,mg=m(g),me=m(e);
+  return {사례명:C.alias,기본정보:{성별:i.sex,나이:i.age,가구유형:i.house,주요문제:i.issue,경제상황:i.econ,메모:i.memo},
+    가계도:{인물:g.nodes.map(n=>({이름:mg[n.id],기호:n.type,나이:n.client?i.age:n.age,사망:!!n.dead,대상자:!!n.ip})),관계:g.edges.map(x=>({a:mg[x.a],b:mg[x.b],종류:GK[x.kind],방향:dn(x,mg)}))},
+    생태도:{체계:e.nodes.map(n=>({이름:me[n.id],유형:n.type,잠재자원:!!n.pot})),관계:e.edges.map(x=>({a:me[x.a],b:me[x.b],종류:EK[x.kind],방향:dn(x,me)}))}};
+}
+function stats(){
+  const BAD=["conflict","fusedconf","abuse","cutoff","distant","divorce","separation"],ST=["stress","conflict","cutoff"],SP=["strong","normal","double"],g=C.geno,e=C.eco;
+  const c=(d,a)=>d.edges.filter(x=>a.includes(x.kind)).length;
+  return {n:g.nodes.length,gb:c(g,BAD),gc:c(g,["close","fused"]),res:e.nodes.filter(n=>n.type!=="center"&&!n.pot).length,pot:e.nodes.filter(n=>n.pot).length,es:c(e,ST),sp:c(e,SP),wk:c(e,["weak","tenuous"])};
+}
+function localBrief(){const s=stats();return `가계도 ${s.n}명 중 갈등·단절 관계 ${s.gb}건, 생태도 지지 자원 ${s.sp}곳·스트레스 관계 ${s.es}건으로 ${s.gb+s.es>s.sp?"관계 갈등 완화와 지지체계 보강이 우선 과제로 보입니다.":"지지체계를 유지하며 취약 관계를 점검할 필요가 있어 보입니다."}`}
+function localReport(){
+  const s=stats(),i=C.info;
+  return cut(`[사정 요약] ${i.age?i.age+", ":""}${i.house||"가구유형 미기재"}. 가계도 ${s.n}명 중 갈등·단절·소원 관계 ${s.gb}건, 친밀·밀착 ${s.gc}건입니다. 생태도는 지지 자원 ${s.sp}곳, 약한 연결 ${s.wk}곳, 스트레스 관계 ${s.es}건입니다. ${s.pot?`잠재적 자원 ${s.pot}곳은 아직 연결 전입니다. `:""}${i.issue?"주요 욕구: "+cut(i.issue,30)+". ":""}제언: 갈등 관계 개입, 약한 연결 자원 강화, 지지 자원 연계를 우선 검토하세요.`,300);
+}
+async function runAI(kind){
+  const box=$("ai_"+kind);
+  if(kind==="brief"){const t=localBrief();C.ai=C.ai||{};C.ai.brief=t;save();if(box)box.textContent=t;return}
+  if(!C.paidRep||!C.repOrder)return;
+  if(box)box.textContent="보고서를 작성하는 중입니다… (10초 안팎)";
+  try{
+    const r=await fetch("/api/assess",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId:C.repOrder,data:casePayload()})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||"작성 실패");
+    C.ai=C.ai||{};C.ai.report=String(d.text||"");C.ai.sig=d.sig||"";C.repLeft=d.left;save();const mr=$("mail_row");if(mr)mr.style.display="flex";
+    const b=$("ai_report");if(b)b.textContent=C.ai.report;
+    const l=$("ai_left");if(l)l.textContent=" 남은 횟수 "+d.left+"회";
+  }catch(e){
+    const b=$("ai_report");if(b)b.textContent="보고서를 만들지 못했습니다. "+e.message+"\n실패한 시도는 횟수에서 차감되지 않습니다. 잠시 후 다시 눌러 주세요.";
+  }
+}
+async function sendMail(){
+  const el=$("mail_to"),st=$("mail_st"),to=(el&&el.value||"").trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){if(st)st.textContent="이메일 주소를 확인해 주세요.";return}
+  if(!C.ai||!C.ai.report||!C.ai.sig||!C.repOrder)return;
+  if(st)st.textContent="보내는 중…";
+  try{
+    const r=await fetch("/api/mail",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId:C.repOrder,text:C.ai.report,sig:C.ai.sig,to})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||"발송 실패");
+    if(st)st.textContent="메일을 보냈습니다. 스팸함도 확인해 주세요.";
+  }catch(e){if(st)st.textContent="보내지 못했습니다. "+e.message}
+}
+function buyReport(){
+  ask("보고서 작성을 위해 입력한 사례 정보(이름·거주지 제외)가 외부 서버로 전송됩니다.\n도형 이름에 실명이 있다면 지운 뒤 진행해 주세요.\n결제 후 보고서 작성을 시작하면 환불이 제한됩니다.\n\n동의하고 결제로 넘어갈까요?","동의하고 결제",()=>payFlow(null,"report"));
+}
+function aiView(){
+  const a=C.ai||(C.ai={brief:"",report:""}),bx='style="font-size:14px;line-height:1.7;margin-top:6px;white-space:pre-wrap"',paid=C.paidRep&&C.repOrder,rp=REPORT_WON.toLocaleString("ko-KR")+"원";
+  return `<p class="note">한국 사회복지사·사회복지학과 학생을 위한 사정 보조 기능입니다. 한 줄 분석은 무료, 300자 보고서는 유료 기능입니다. 교육·실무 참고용이며 전문적 판단을 대신하지 않습니다.</p>
+  <div class="card"><b>한 줄 분석 · 무료</b><div class="row"><button class="pri" onclick="runAI('brief')">분석하기</button></div><div id="ai_brief" ${bx}>${esc(a.brief)}</div></div>
+  <div class="card"><b>300자 보고서 · 유료</b><div class="row">${paid?`<button class="pri" onclick="runAI('report')">${a.report?"다시 작성":"보고서 작성"}</button><button onclick="navigator.clipboard&&navigator.clipboard.writeText(C.ai.report||'')">복사</button>`:`<button class="pri" onclick="buyReport()">${rp} 결제하고 보고서 받기</button>`}</div>${paid?`<p class="note">결제 1건당 ${REPORT_USES}회까지 작성할 수 있습니다.<span id="ai_left">${C.repLeft!=null?" 남은 횟수 "+C.repLeft+"회":""}</span></p>`:`<p class="note">회원가입 없이 결제 · 결제 후 바로 보고서가 작성되며, 작성을 시작하면 환불이 제한됩니다. (<a href="/legal#refund">환불 안내</a>)</p>`}<div id="ai_report" ${bx}>${paid?esc(a.report):""}</div>${paid?`<div class="row" id="mail_row" style="${a.report&&a.sig?"":"display:none"}"><input id="mail_to" type="email" inputmode="email" autocomplete="off" placeholder="받을 이메일 주소" aria-label="받을 이메일 주소" style="flex:1;min-width:0"><button onclick="sendMail()">메일로 받기</button></div><div id="mail_st" class="note" role="status"></div>`:""}</div>`;
+}
+
+/* ---------- 화면 ---------- */
+function go(t){pendE=null;T=t;sel=null;tool=null;from=null;pend=null;render();scrollTo(0,0)}
+function caseView(){
+  const tabs=[["info","사례등록"],["geno","가계도"],["eco","생태도"],["out","내보내기"],["ai","사정분석"]]
+    .map(([k,v])=>`<button role="tab" aria-selected="${T===k}" class="${T===k?"on":""}" onclick="go('${k}')">${v}</button>`).join("");
+  return `<div class="top"><button onclick="closeCase()">← 목록</button><b id="hd">${esc(C.alias)}</b></div>
+    <div class="tabs" role="tablist">${tabs}</div>
+    ${T==="info"?infoView():T==="out"?outView():T==="ai"?aiView():editorView()}`;
+}
+function render(){
+  $("app").innerHTML=C?caseView():listView();
+  if(C&&(T==="geno"||T==="eco")){bindCanvas();draw();panel()}
+}
+load();render();bizFooter();payReturn();
+</script>
+</body>
+</html>
